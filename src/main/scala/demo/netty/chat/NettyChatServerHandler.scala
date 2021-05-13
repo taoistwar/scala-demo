@@ -4,6 +4,7 @@ package demo.netty.chat
 import demo.netty.chat.NettyChatServerHandler.{channels, uid}
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.channel.{Channel, ChannelHandlerContext, ChannelId, SimpleChannelInboundHandler}
+import io.netty.handler.timeout.{IdleState, IdleStateEvent}
 import io.netty.util.concurrent.GlobalEventExecutor
 
 import java.text.SimpleDateFormat
@@ -42,9 +43,9 @@ class NettyChatServerHandler extends SimpleChannelInboundHandler[String] {
    * 断开连接, 将xx客户离开信息推送给当前在线的客户
    */
   override def handlerRemoved(ctx: ChannelHandlerContext): Unit = {
-    val channel = ctx.channel();
-    channelGroup.writeAndFlush("[客户端]" + channel.remoteAddress() + " 离开了\n");
-    println("channelGroup size" + channelGroup.size());
+    val channel = ctx.channel()
+    channelGroup.writeAndFlush("[客户端]" + channel.remoteAddress() + " 离开了\n")
+    println("channelGroup size" + channelGroup.size())
     val item = channels.find(entry => entry._2 == channel)
     if (item.nonEmpty) {
       channels -= item.get._1
@@ -63,7 +64,7 @@ class NettyChatServerHandler extends SimpleChannelInboundHandler[String] {
    * 表示channel 处于不活动状态, 提示 xx 离线了
    */
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
-    println(ctx.channel().remoteAddress() + "离线了~");
+    println(ctx.channel().remoteAddress() + "离线了~")
   }
 
   /**
@@ -71,20 +72,37 @@ class NettyChatServerHandler extends SimpleChannelInboundHandler[String] {
    */
   override def channelRead0(ctx: ChannelHandlerContext, msg: String): Unit = {
     //获取到当前channel
-    val channel = ctx.channel();
+    val channel = ctx.channel()
     //这时我们遍历channelGroup, 根据不同的情况，回送不同的消息
     val iter = channelGroup.iterator()
     while (iter.hasNext) {
       val ch = iter.next()
       if(channel != ch) { //不是当前的channel,转发消息
-        ch.writeAndFlush("[客户]" + channel.remoteAddress() + " 发送了消息" + msg + "\n");
+        ch.writeAndFlush("[客户]" + channel.remoteAddress() + " 发送了消息" + msg + "\n")
       }else {//回显自己发送的消息给自己
-        ch.writeAndFlush("[自己]发送了消息" + msg + "\n");
+        ch.writeAndFlush("[自己]发送了消息" + msg + "\n")
       }
     }
   }
-
+  @SuppressWarnings(Array("deprecation"))
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     ctx.close()
+  }
+  override def userEventTriggered(ctx: ChannelHandlerContext, evt: Any): Unit = {
+    evt match {
+      case event: IdleStateEvent =>
+        val eventType = event.state() match {
+          case IdleState.READER_IDLE =>
+            "读空闲"
+          case IdleState.WRITER_IDLE =>
+            "写空闲"
+          case IdleState.ALL_IDLE =>
+            "读写空闲"
+        }
+        println(ctx.channel().remoteAddress() + "--超时时间--" + eventType)
+        println("服务器做相应处理..")
+    }
+    //如果发生空闲，我们关闭通道
+    // ctx.channel().close();
   }
 }
