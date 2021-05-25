@@ -1,0 +1,1331 @@
+{
+  "id": "abb88b64-4ca0-4aab-8fb3-f8921cb76043",
+  "name": "ROM带宽(HDFS)_非异步_MIX",
+  "configType": "online",
+  "nodes": [
+    {
+      "id": "94",
+      "name": "ROM临时方案过滤极大值(负值)及带宽为0",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "isSample": 0,
+        "name": "ROM临时方案过滤极大值(负值)及带宽为0",
+        "assets": "1010",
+        "industries": [
+          7
+        ],
+        "createTime": "2020-10-26 16:28:42",
+        "data": {
+          "parallelism": 1,
+          "name": "function",
+          "keyed": {
+            "keyed": false
+          },
+          "filter": [],
+          "function": {
+            "script": "package com.haima.sage.bigdata.script\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichFilterFunction\nimport org.apache.flink.configuration.Configuration\n//TODO import  更多的引用\n//TODO 其他类定义\ncase class $name() extends RichFilterFunction[RichMap] {\n\n  // filter函数[对value中每个元素进行filter判断，true的留下false的过滤掉]\n  override def filter(value: RichMap): Boolean = {\n      \n    val video_flag = value.get(\"video_txPkts\") match {\n      case Some(x: Long) => if(x >=0) true else false\n      case Some(_) => false\n      case None => false\n    }\n    \n    val total_flag = value.get(\"total_txPkts\") match {\n      case Some(x: Long) => if(x >=0) true else false\n      case Some(_) => false\n      case None => false\n    }\n\n    val tx_flag = value.get(\"total_txBw\") match {\n      case Some(x: Double) => if(x > 0.0D && x < 3000000D) true else false\n      case Some(_) => false\n      case None => false\n    }\n    \n     val st_flag = value.get(\"total_streamType\") match {\n      case Some(x: Integer) => if( x == 1 ||  x == 2) false else true\n      case Some(_) => false\n      case None => false\n    }\n    \n\n    if (video_flag && total_flag && tx_flag && st_flag){\n      true\n    } else {\n      false\n    }\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}",
+            "functionType": "FILTER"
+          }
+        },
+        "lastTime": "2020-11-02 15:35:43",
+        "id": "ed5fb65d-d16e-4fa2-9f93-7efbf8210466"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "116",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "93",
+      "name": "JSON再解析",
+      "type": "extend",
+      "subType": "reParser",
+      "parallelism": 10,
+      "data": {
+        "isSample": 0,
+        "name": "JSON再解析",
+        "assets": "1007",
+        "industries": [
+          7
+        ],
+        "createTime": "2020-01-20 18:15:40",
+        "parser": {
+          "filter": [
+            {
+              "field": "data",
+              "parser": {
+                "filter": [],
+                "metadata": [],
+                "parallelism": 5,
+                "name": "json"
+              },
+              "ref": "f1956992-1ac4-4071-94b1-8607b31b3526",
+              "name": "reParser"
+            }
+          ],
+          "metadata": [],
+          "parallelism": 1,
+          "name": "nothing"
+        },
+        "lastTime": "2020-01-20 18:15:40",
+        "id": "256b9d9a-3f25-40c4-b0a1-5a529e174320",
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "91",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "91",
+      "name": "处理offset",
+      "type": "extend",
+      "subType": "mapping",
+      "parallelism": 10,
+      "data": {
+        "name": "处理offset",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "mapping",
+              "fields": {
+                "offset": "c_offset"
+              }
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "90",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "90",
+      "name": "不处理逻辑",
+      "type": "transform",
+      "subType": "delimit",
+      "parallelism": 10,
+      "data": {
+        "collector": "mvp-hadoop08",
+        "name": "不处理逻辑",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "delimit",
+          "parallelism": 1,
+          "delimit": "9999999999999999999999999999999999",
+          "fields": [
+            "data"
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "1",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "name": "ROM字段类型转换",
+      "type": "extend",
+      "subType": "convert",
+      "parallelism": 10,
+      "data": {
+        "name": "ROM字段类型转换",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "convert",
+              "fields": [
+                {
+                  "key": "app_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "app_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "app_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "app_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "app_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "archive_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "archive_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "archive_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "archive_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "archive_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "audio_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "audio_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "audio_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "audio_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "audio_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "total_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "total_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "total_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "total_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "total_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "video_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "video_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "video_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "video_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "video_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "virtual_pingPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "virtual_rxBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "virtual_rxPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "virtual_txBytes",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "key": "virtual_txPkts",
+                  "name": "",
+                  "type": "long",
+                  "sample": ""
+                },
+                {
+                  "format": "yyyy-MM-dd HH:mm:ss",
+                  "name": "",
+                  "key": "log_time",
+                  "sample": "",
+                  "type": "datetime"
+                },
+                {
+                  "format": "yyyy-MM-dd HH:mm:ss",
+                  "name": "",
+                  "key": "pre_tmestamp",
+                  "sample": "",
+                  "type": "datetime"
+                }
+              ]
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "17",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "name": "ROM带宽字段删除",
+      "type": "extend",
+      "subType": "removeFields",
+      "parallelism": 10,
+      "data": {
+        "name": "ROM带宽字段删除",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "removeFields",
+              "fields": [
+                "appBandwidth",
+                "archiveBandwidth",
+                "audioBandwidth",
+                "totalBandwidth",
+                "videoBandwidth",
+                "virtualBandwidth",
+                "offset"
+              ]
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "9",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "name": "ROM带宽字段重命名",
+      "type": "extend",
+      "subType": "mapping",
+      "parallelism": 10,
+      "data": {
+        "name": "ROM带宽字段重命名",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "mapping",
+              "fields": {
+                "totalBandwidth.txBytes": "total_txBytes",
+                "videoBandwidth.videoHeight": "video_height",
+                "appBandwidth.txPkts": "app_txPkts",
+                "audioBandwidth.rxBw": "audio_rxBw",
+                "videoBandwidth.txBw": "video_txBw",
+                "videoBandwidth.txBytes": "video_txBytes",
+                "preTimestamp": "pre_timestamp",
+                "videoBandwidth.rxPkts": "video_rxPkts",
+                "virtualBandwidth.rxBytes": "virtual_rxBytes",
+                "pkgName": "pkg_name",
+                "videoBandwidth.rxBytes": "video_rxBytes",
+                "audioBandwidth.streamType": "audio_streamType",
+                "timestamp": "log_time",
+                "appBandwidth.rxBw": "app_rxBw",
+                "archiveBandwidth.txBw": "archive_txBw",
+                "appBandwidth.rxBytes": "app_rxBytes",
+                "totalBandwidth.txBw": "total_txBw",
+                "totalBandwidth.txPkts": "total_txPkts",
+                "audioBandwidth.pingPkts": "audio_pingPkts",
+                "archiveBandwidth.txPkts": "archive_txPkts",
+                "appBandwidth.rxPkts": "app_rxPkts",
+                "videoBandwidth.streamType": "video_streamType",
+                "virtualBandwidth.rxBw": "virtual_rxBw",
+                "archiveBandwidth.pingPkts": "archive_pingPkts",
+                "virtualBandwidth.txBw": "virtual_txBw",
+                "archiveBandwidth.rxPkts": "archive_rxPkts",
+                "partition": "c_partition",
+                "archiveBandwidth.txTotalBytes": "archive_tx_total_bytes",
+                "archiveBandwidth.rxBw": "archive_rxBw",
+                "virtualBandwidth.txBytes": "virtual_txBytes",
+                "videoBandwidth.maxBitrate": "max_bitrate",
+                "accessKeyId": "bid",
+                "audioBandwidth.txBytes": "audio_txBytes",
+                "videoBandwidth.txTotalBytes": "audio_tx_total_bytes",
+                "totalBandwidth.pingPkts": "total_pingPkts",
+                "totalBandwidth.rxBw": "total_rxBw",
+                "videoBandwidth.pingPkts": "video_pingPkts",
+                "virtualBandwidth.streamType": "virtual_streamType",
+                "virtualBandwidth.txPkts": "virtual_txPkts",
+                "appBandwidth.streamType": "app_streamType",
+                "archiveBandwidth.rxTotalBytes": "archive_rx_total_bytes",
+                "virtualBandwidth.pingPkts": "virtual_pingPkts",
+                "appBandwidth.rxTotalBytes": "app_rx_total_bytes",
+                "appBandwidth.txBytes": "app_txBytes",
+                "totalBandwidth.txTotalBytes": "total_tx_total_bytes",
+                "appBandwidth.txTotalBytes": "app_tx_total_bytes",
+                "logtype": "log_type",
+                "archiveBandwidth.txBytes": "archive_txBytes",
+                "audioBandwidth.txPkts": "audio_txPkts",
+                "videoBandwidth.videoWidth": "video_width",
+                "virtualBandwidth.txTotalBytes": "virtual_tx_total_bytes",
+                "appBandwidth.txBw": "app_txBw",
+                "boardVersion": "board_version",
+                "archiveBandwidth.streamType": "archive_streamType",
+                "virtualBandwidth.rxPkts": "virtual_rxPkts",
+                "videoBandwidth.rxTotalBytes": "audio_rx_total_bytes",
+                "videoBandwidth.rxBw": "video_rxBw",
+                "audioBandwidth.txBw": "audio_txBw",
+                "totalBandwidth.streamType": "total_streamType",
+                "videoBandwidth.txPkts": "video_txPkts",
+                "audioBandwidth.rxBytes": "audio_rxBytes",
+                "virtualBandwidth.rxTotalBytes": "virtual_rx_total_bytes",
+                "audioBandwidth.rxPkts": "audio_rxPkts",
+                "totalBandwidth.rxTotalBytes": "total_rx_total_bytes",
+                "archiveBandwidth.rxBytes": "archive_rxBytes",
+                "totalBandwidth.rxPkts": "total_rxPkts",
+                "audioBandwidth.txTotalBytes": "audio_tx_total_bytes",
+                "totalBandwidth.rxBytes": "total_rxBytes",
+                "appBandwidth.pingPkts": "app_pingPkts",
+                "audioBandwidth.rxTotalBytes": "audio_rx_total_bytes"
+              }
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "8",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "name": "ROM带宽字段内容解析",
+      "type": "extend",
+      "subType": "reParser",
+      "parallelism": 10,
+      "data": {
+        "name": "ROM带宽字段内容解析",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "reParser",
+              "fields": [
+                [
+                  "",
+                  ""
+                ]
+              ],
+              "ref": "d10f9bbd-c98f-4942-9e0c-a070eb6486ae",
+              "field": "data"
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "103",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "name": "ROM带宽日志解析",
+      "type": "extend",
+      "subType": "script",
+      "parallelism": 10,
+      "data": {
+        "name": "ROM带宽日志解析",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "script",
+              "type": "scala",
+              "script": "package com.haima.sage.bigdata.script\n\nimport com.haima.sage.bigdata.etl.common.model.filter.RichMapMapping\nimport com.haima.sage.bigdata.etl.common.model.RichMap\n//TODO import  更多的引用\nimport scala.util.matching.Regex\n\n//TODO 其他类定义\ncase class $name() extends RichMapMapping {\n  //TODO 变量定义\n  override def process(value: RichMap): RichMap = {\n    //TODO 业务逻辑\n    val a: String = value.get(\"a\").getOrElse(\"\").toString\n    val b: String = value.get(\"b\").getOrElse(\"\").toString\n    val print_time: String = a + \" \" + b\n\n    val c: String = value.get(\"c\").getOrElse(\"\").toString\n    val regex: Regex = new Regex(\"^*[a-zA-Z0-9]{16}\")\n    val traceId = regex.findFirstIn(c).getOrElse(\"\")\n\n    val g: String = value.get(\"g\").getOrElse(\"\").toString\n    val gStr: String = g.split(\":\")(1)\n    val dataCenterId: String = gStr.substring(0, gStr.length - 1)\n\n    val h: String = value.get(\"h\").getOrElse(\"\").toString\n    val hId: String = h.split(\":\")(1)\n    val eventId: String = hId.substring(0, hId.length - 1)\n\n    val data: String = value.get(\"i\").getOrElse(\"\").toString\n\n    val _value = if (value.contains(\"@metadata\")) {\n      value + (\"log_from\" -> \"cloud\")\n    } else if (value.contains(\"agent\")) {\n      value + (\"log_from\" -> \"mix-cloud\")\n    } else {\n      value\n    }\n    _value - (\"a\") - (\"b\") - (\"c\") - (\"d\") - (\"e\") - (\"f\") -\n      (\"g\") - (\"h\") - (\"h\") - (\"i\") - (\"j\") - (\"c@path\") -\n      (\"c@receive_time\") - (\"@metadata\") - (\"beat\") - (\"host\") -\n      (\"hostname\") - (\"idc_\") - (\"input\") - (\"prospector\") - (\"@timestamp\") -\n      (\"source\") - (\"topic\") - (\"namespace\") - (\"agent\") - (\"ecs\") - (\"log\") - (\"@version\") +\n      (\"data\" -> data) + (\"trace_id\" -> traceId) + (\"idc\" -> dataCenterId) +\n      (\"event_id\" -> eventId) + (\"print_time\" -> print_time)\n\n\n  }\n}"
+            }
+          ]
+        },
+        "id": "",
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "3",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Rom-message解析",
+      "type": "extend",
+      "subType": "reParser",
+      "parallelism": 10,
+      "data": {
+        "name": "Rom-message解析",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "reParser",
+              "fields": [
+                [
+                  "",
+                  ""
+                ]
+              ],
+              "field": "message",
+              "ref": "fffd8960-25ce-4781-b370-31bedb992427"
+            }
+          ]
+        },
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "93",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "name": "ROM带宽",
+      "type": "source",
+      "subType": "kafka",
+      "parallelism": 1,
+      "data": {
+        "isSample": 0,
+        "collector": "bigdata-yace08",
+        "name": "ROM带宽",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "data": {
+          "parallelism": 1,
+          "name": "kafka",
+          "$default$3": {},
+          "wildcard": "false",
+          "hostPorts": "MVP-HADOOP07:6667,MVP-HADOOP08:6667,MVP-HADOOP09:6667,MVP-HADOOP33:6667,MVP-HADOOP34:6667",
+          "startupMode": "TIMESTAMP",
+          "dbname": "default",
+          "catalogName": "default",
+          "authentication": "NONE",
+          "properties": {
+            "connectTimeout": 500,
+            "timestamp_offset": 1618542000000
+          },
+          "position": "END",
+          "codec": {
+            "name": "line"
+          },
+          "topic": "cloud-platform-paas-cf-log2"
+        }
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": []
+    },
+    {
+      "id": "98",
+      "name": "ROM详情输出HDFS",
+      "type": "sink",
+      "subType": "hdfs",
+      "parallelism": 5,
+      "data": {
+        "isSample": 0,
+        "name": "ROM详情输出HDFS",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "createTime": "2020-12-11 16:19:24",
+        "data": {
+          "parallelism": 1,
+          "name": "hdfs",
+          "path": {
+            "parallelism": 0,
+            "name": "file",
+            "path": "$",
+            "dbname": "default",
+            "cache": 0,
+            "catalogName": "default",
+            "contentType": {
+              "name": "del",
+              "delimit": ",",
+              "fields": "audio_pingPkts,audio_rx_total_bytes,audio_rxBw,audio_rxBytes,audio_rxPkts,audio_streamType,audio_tx_total_bytes,audio_txBw,audio_txBytes,audio_txPkts,bid,bigdata_receive_delay_ms,bigdata_time,board_version,c_offset,c_partition,cid,data_@timestamp,event_id,hdfs_path,idc,interval,log_from,log_time,log_topic,log_type,mac,max_bitrate,oid,pkg_name,pre_timestamp,print_time,total_pingPkts,total_rx_total_bytes,total_rxBw,total_rxBytes,total_rxPkts,total_streamType,total_tx_total_bytes,total_txBw,total_txBytes,total_txPkts,trace_id,video_height,video_pingPkts,video_rxBw,video_rxBytes,video_rxPkts,video_streamType,video_txBw,video_txBytes,video_txPkts,video_width",
+              "encoding": "UTF-8"
+            },
+            "persisRef": {
+              "name": "ref",
+              "field": "hdfs_path"
+            }
+          },
+          "setting": {
+            "interval": 3600000,
+            "maxSize": 128,
+            "maxActions": 1000000
+          },
+          "host": "MVP-HADOOP26:8020,MVP-HADOOP27:8020",
+          "dbname": "default",
+          "cache": 1000,
+          "nameService": "HaimaNX",
+          "catalogName": "default",
+          "replication": 1,
+          "authentication": "NONE",
+          "properties": {},
+          "nameNodes": "nn1,nn2",
+          "mode": false
+        },
+        "lastTime": "2020-12-14 15:01:58",
+        "id": "0e8069e4-bc84-4c35-a961-cc0951bf668b",
+        "writeType": "hdfs"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "99",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "99",
+      "name": "HDFS路径生成（原始数据）",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "collector": "mvp-hadoop08",
+        "name": "HDFS路径生成（原始数据）",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "data": {
+          "name": "function",
+          "parallelism": 1,
+          "keyed": {
+            "keyed": false
+          },
+          "function": {
+            "functionType": "MAP",
+            "script": "package com.haima.sage.bigdata.script\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichMapFunction\nimport org.apache.flink.configuration.Configuration\n//TODO import  更多的引用\n//TODO 其他类定义\ncase class $name() extends RichMapFunction[RichMap,RichMap] {\n\n  // map函数[对value的每个元素应用，返回一个新的RichMap]\n  override def map(value: RichMap): RichMap = {\n      // 此处原样返回，不做任何处理\n      try {\n      import java.text.SimpleDateFormat\n      val df1 = new SimpleDateFormat(\"yyyyMMdd\")\n      val df2 = new SimpleDateFormat(\"yyyyMMddHH\")\n      val df3 = new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\")\n\n      val oid = value.getOrElse(\"oid\",\"null\").toString\n      val bid = value.getOrElse(\"bid\",\"null\").toString\n      var log_yyyyMMdd = \"\"\n      var log_yyyyMMddHH = \"\"\n      var sdfLogTime = \"\"\n      value.get(\"log_time\") match {\n        case None =>\n        case Some(time:java.util.Date) => {\n          log_yyyyMMdd = df1.format(time)\n          log_yyyyMMddHH = df2.format(time)\n          sdfLogTime = df3.format(time)\n        }\n      }\n\n      val hdfs_path = s\"/data/bandwidth_ori/$log_yyyyMMdd/$oid/$bid/$log_yyyyMMdd/$log_yyyyMMddHH\"\n\n      value ++ Map(\"hdfs_path\"->hdfs_path,\"log_time\" -> sdfLogTime)\n    } catch {\n      case e: Exception => value\n    }\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}"
+          }
+        }
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "116",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "100",
+      "name": "HDFS路径生成（加盐数据）",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "collector": "mvp-hadoop08",
+        "name": "HDFS路径生成（加盐数据）",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "data": {
+          "name": "function",
+          "parallelism": 1,
+          "keyed": {
+            "keyed": false
+          },
+          "function": {
+            "functionType": "MAP",
+            "script": "package com.haima.sage.bigdata.script\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichMapFunction\nimport org.apache.flink.configuration.Configuration\n//TODO import  更多的引用\n//TODO 其他类定义\ncase class $name() extends RichMapFunction[RichMap,RichMap] {\n\n  // map函数[对value的每个元素应用，返回一个新的RichMap]\n  override def map(value: RichMap): RichMap = {\n      // 此处原样返回，不做任何处理\n      try {\n      import java.text.SimpleDateFormat\n      val df1 = new SimpleDateFormat(\"yyyyMMdd\")\n      val df2 = new SimpleDateFormat(\"yyyyMMddHH\")\n      val df3 = new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\")\n\n      val oid = value.getOrElse(\"oid\",\"null\").toString\n      val bid = value.getOrElse(\"bid\",\"null\").toString\n      var log_yyyyMMdd = \"\"\n      var log_yyyyMMddHH = \"\"\n      var sdfLogTime = \"\"\n      value.get(\"log_time\") match {\n        case None =>\n        case Some(time:java.util.Date) => {\n          log_yyyyMMdd = df1.format(time)\n          log_yyyyMMddHH = df2.format(time)\n          sdfLogTime = df3.format(time)\n        }\n      }\n\n      val hdfs_path = s\"/data/bandwidth/$log_yyyyMMdd/$oid/$bid/$log_yyyyMMdd/$log_yyyyMMddHH\"\n\n      value ++ Map(\"hdfs_path\"->hdfs_path,\"log_time\" -> sdfLogTime)\n    } catch {\n      case e: Exception => value\n    }\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}"
+          }
+        }
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "119",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "101",
+      "name": "ROM带宽添加盐值",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "collector": "mvp-hadoop08",
+        "name": "ROM带宽添加盐值",
+        "assets": "1007",
+        "industries": [
+          7
+        ],
+        "data": {
+          "name": "function",
+          "parallelism": 1,
+          "keyed": {
+            "keyed": false
+          },
+          "function": {
+            "functionType": "MAP",
+            "script": "package com.haima.sage.bigdata.script\n\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichMapFunction\nimport org.apache.flink.configuration.Configuration\n\n//TODO import  更多的引用\nimport scala.util.Random\n//TODO 其他类定义\ncase class $name() extends RichMapFunction[RichMap, RichMap] {\n\n  // map函数[对value的每个元素应用，返回一个新的RichMap]\n  override def map(value: RichMap): RichMap = {\n\n    var rasult_txBw:Double = 0D\n    // 单位B\n    val total_txBw:Double = value.get(\"total_txBw\") match {\n      case Some(x: Double) => x\n      case None => 0D\n    }\n    // 单位B\n    val max_bitrate: Integer = value.get(\"max_bitrate\") match {\n      case Some(x: Integer) => x / 8\n      case None => 0\n    }\n \n    rasult_txBw = if (max_bitrate != 0 && total_txBw * 1.15 / max_bitrate > 1.1) {\n      Random.setSeed(total_txBw.toLong)\n      ((Random.nextInt(500).toDouble / 10000 + 1.05) * max_bitrate).formatted(\"%.4f\").toDouble\n    } else {\n      total_txBw *1.15 formatted(\"%.4f\") toDouble\n    }\n\n    value ++ Map(\"total_txBw\" -> rasult_txBw , \"ori_txBw\" -> total_txBw)\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}"
+          }
+        },
+        "id": "177a86d7-5afb-4ff9-a56a-bcaabd3ca0e9"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "94",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "102",
+      "name": "ROM详情输出HDFS",
+      "type": "sink",
+      "subType": "hdfs",
+      "parallelism": 5,
+      "data": {
+        "isSample": 0,
+        "name": "ROM详情输出HDFS",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "createTime": "2020-12-11 16:19:24",
+        "data": {
+          "parallelism": 1,
+          "name": "hdfs",
+          "path": {
+            "parallelism": 0,
+            "name": "file",
+            "path": "$",
+            "dbname": "default",
+            "cache": 0,
+            "catalogName": "default",
+            "contentType": {
+              "name": "del",
+              "delimit": ",",
+              "fields": "log_time,oid,bid,cid,total_streamType,pkg_name,pre_timestamp,interval,idc,total_txBw",
+              "encoding": "UTF-8"
+            },
+            "persisRef": {
+              "name": "ref",
+              "field": "hdfs_path"
+            }
+          },
+          "setting": {
+            "interval": 3600000,
+            "maxSize": 128,
+            "maxActions": 1000000
+          },
+          "host": "MVP-HADOOP26:8020,MVP-HADOOP27:8020",
+          "dbname": "default",
+          "cache": 1000,
+          "nameService": "HaimaNX",
+          "catalogName": "default",
+          "replication": 1,
+          "authentication": "NONE",
+          "properties": {},
+          "nameNodes": "nn1,nn2",
+          "mode": false
+        },
+        "lastTime": "2020-12-14 15:01:58",
+        "writeType": "hdfs"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "100",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "103",
+      "name": "判断JSON字符串正确性",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "isSample": 0,
+        "name": "判断JSON字符串正确性",
+        "assets": "1007",
+        "industries": [
+          7
+        ],
+        "data": {
+          "parallelism": 1,
+          "name": "function",
+          "keyed": {
+            "keyed": false
+          },
+          "filter": [],
+          "function": {
+            "script": "package com.haima.sage.bigdata.script\r\nimport com.haima.sage.bigdata.etl.common.model.RichMap\r\nimport org.apache.flink.api.common.functions.RichFilterFunction\r\nimport org.apache.flink.configuration.Configuration\r\n//TODO import  更多的引用\r\n//TODO 其他类定义\r\ncase class $name() extends RichFilterFunction[RichMap] {\r\n\r\n  // filter函数[对value中每个元素进行filter判断，true的留下false的过滤掉]\r\n  override def filter(value: RichMap): Boolean = {\r\n      // 此处表示全部留下\r\n    import com.fasterxml.jackson.databind.{JavaType, ObjectMapper}\r\n    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper\r\n    import com.haima.sage.bigdata.etl.common.Constants\r\n    import com.haima.sage.bigdata.etl.utils.Mapper\r\n    val mapper: ObjectMapper with ScalaObjectMapper = new Mapper() {}.mapper\r\n    val _type: JavaType = mapper.constructType(classOf[Map[String, Any]])\r\n    val l_type: JavaType = mapper.constructType(classOf[List[Map[String, Any]]])\r\n    \r\n      try {\r\n        value.get(\"data\") match {\r\n          case Some(x:String) => \r\n            val event = x.trim\r\n            if (event.startsWith(\"{\")) {\r\n               mapper.readValue[Map[String, Any]](event,_type)\r\n            } else {\r\n               Map(Constants.RAW -> mapper.readValue[List[Map[String, Any]]](event, l_type))\r\n            }\r\n            return true\r\n          case Some(x:Any) => return false\r\n          case None => return false \r\n        }\r\n      } catch {\r\n        case e:Exception => return false\r\n      }\r\n\r\n      false\r\n\r\n\r\n  }\r\n\r\n  // 打开操作\r\n  override def open(parameters: Configuration): Unit = {\r\n  }\r\n\r\n  // 关闭操作\r\n  override def close(): Unit = {\r\n  }\r\n}",
+            "functionType": "FILTER"
+          }
+        },
+        "id": "4ff66218-5536-45f6-94c1-37eaaca12215"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "7",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "114",
+      "name": "规定时间内数据",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "isSample": 0,
+        "name": "规定时间内数据",
+        "assets": "1010",
+        "industries": [
+          7
+        ],
+        "createTime": "2020-10-26 16:28:42",
+        "data": {
+          "parallelism": 1,
+          "name": "function",
+          "keyed": {
+            "keyed": false
+          },
+          "filter": [],
+          "function": {
+            "script": "package com.haima.sage.bigdata.script\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichFilterFunction\nimport org.apache.flink.configuration.Configuration\n\n//TODO import  更多的引用\n//TODO 其他类定义\ncase class $name() extends RichFilterFunction[RichMap] {\n\n  // filter函数[对value中每个元素进行filter判断，true的留下false的过滤掉]\n  override def filter(value: RichMap): Boolean = {\n\n    value.get(\"log_time\") match {\n      case Some(x: java.util.Date) =>\n        val time = x.getTime.toLong\n        val start_time = 1614268800000L\n        val end_time = 1613819700000L\n        if (time >= start_time) {\n          true\n        } else {\n          false\n        }\n      case _ =>\n        false\n    }\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}",
+            "functionType": "FILTER"
+          }
+        },
+        "lastTime": "2020-12-07 22:20:20",
+        "id": "ed5fb65d-d16e-4fa2-9f93-7efbf8210466"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "19",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "116",
+      "name": "OID白名单",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "isSample": 0,
+        "name": "OID白名单",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "data": {
+          "parallelism": 1,
+          "name": "function",
+          "keyed": {
+            "keyed": false
+          },
+          "filter": [],
+          "function": {
+            "script": "package com.haima.sage.bigdata.script\r\n\r\nimport com.haima.sage.bigdata.etl.common.model.RichMap\r\nimport org.apache.flink.api.common.functions.RichMapFunction\r\nimport org.apache.flink.configuration.Configuration\r\nimport java.util.Date\r\n\r\n//TODO import  更多的引用\r\n//TODO 其他类定义\r\ncase class $name() extends RichMapFunction[RichMap, RichMap] {\r\n\r\n  /**\r\n   * 本地缓存\r\n   * bid -> oid 映射关系\r\n   * key = bid\r\n   * value = oid\r\n   * fc7d0c914cd   原神正式\r\n   * df66d5accfe  原神-三开正式\r\n   * aa36d638bee   TapTap-标准-正式\r\n   * 51a0e31e0d7   TapTap-高性能II-正式\r\n   * 41d528d3f37   TapTap-普通-正式\r\n   * 235dc09bc1c   TapTap-高性能I -正式I\r\n   */\r\n  private val localCache: Map[String, String] = Map(\r\n   \"fc7d0c914cd\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"2232bd0342b\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"df66d5accfe\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"3b38f6e0ce7\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"ce41f2b5414\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"494029e852b\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"a945f272fa3\" -> \"06uYZWHMEhBL4hAd\",\r\n   \"7f02ff7330d\" -> \"2MrvHeohjNCqocq2\",\r\n   \"52d02e0a929\" -> \"3M5SvmKfsN8Hld4P\",\r\n   \"dabad77a53d\" -> \"3M5SvmKfsN8Hld4P\",\r\n   \"2f55be1cbbe\" -> \"3XTCrcOQl5MqMlIH\",\r\n   \"cedb1cb70fc\" -> \"A4399ADKLSLXCL32\",\r\n   \"e79f66c0674\" -> \"A4399ADKLSLXCL33\",\r\n   \"fb6a1ecad97\" -> \"A4399ADKLSLXCL34\",\r\n   \"8ef5e572bf4\" -> \"A4399ADKLSLXCL35\",\r\n   \"db8b6576caa\" -> \"A4399ADKLSLXCL35\",\r\n   \"1e2a1210ead\" -> \"A4399ADKLSLXCL35\",\r\n   \"139bf9a69c1\" -> \"A4399ADKLSLXCL35\",\r\n   \"290abf5cbfa\" -> \"A4399ADKLSLXCL35\",\r\n   \"798e8485ae6\" -> \"A4399ADKLSLXCL35\",\r\n   \"f90c11c7776\" -> \"A4399ADKLSLXCL35\",\r\n   \"c344f56030b\" -> \"A4399ADKLSLXCL35\",\r\n   \"90863e35037\" -> \"A4399ADKLSLXCL35\",\r\n   \"f6ceb866457\" -> \"A4399ADKLSLXCL35\",\r\n   \"cedb1cb70fc\" -> \"A4399ADKLSLXCL35\",\r\n   \"7c9e2a7edad\" -> \"A4399ADKLSLXCL35\",\r\n   \"ca83e276fb2\" -> \"A4399ADKLSLXCL35\",\r\n   \"5d868990747\" -> \"A4399ADKLSLXCL35\",\r\n   \"cf67257c4db\" -> \"A4399ADKLSLXCL35\",\r\n   \"5b2db98b764\" -> \"A4399ADKLSLXCL36\",\r\n   \"ca83e276fb2\" -> \"A4399ADKLSLXCL37\",\r\n   \"7c9e2a7edad\" -> \"A4399ADKLSLXCL38\",\r\n   \"f6ceb866457\" -> \"A4399ADKLSLXCL39\",\r\n   \"d626bc69c11\" -> \"AVbfVAI3cRb62Bq6\",\r\n   \"d477cdfe1fd\" -> \"AVbfVAI3cRb62Bq6\",\r\n   \"b3d1556ffed\" -> \"Ayj5JvAJZVaysEZK\",\r\n   \"90d31b2ed6d\" -> \"C88CNCKQ5RaQ5bWG\",\r\n   \"220f84f5296\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"dac50fc5257\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"c7429771214\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"538c513f91e\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"38f1ae99a1d\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"5327978ecf1\" -> \"CjGkTdFV7CQ3ZYbc\",\r\n   \"6365efd9300\" -> \"CZqQSe4FbUH1nSYB\",\r\n   \"d620e4750e9\" -> \"CZqQSe4FbUH1nSYB\",\r\n   \"198d17e6d34\" -> \"CZqQSe4FbUH1nSYB\",\r\n   \"62727f043a2\" -> \"CZqQSe4FbUH1nSYB\",\r\n   \"cbc6adf939d\" -> \"dcP4ZpqMIWcrnNUI\",\r\n   \"67cc62ebbcd\" -> \"dskxKEh5VrjBd84O\",\r\n   \"2d66581c300\" -> \"FhrWpdkE2J6EFn0M\",\r\n   \"5443a029b32\" -> \"GyEuQNGyxl1sIatN\",\r\n   \"9599e53c\" -> \"HAIYUDONGXIANG00\",\r\n   \"238babb01f6\" -> \"Hg1goOyupvDSyDPC\",\r\n   \"8874cca31f0\" -> \"Hg1goOyupvDSyDPC\",\r\n   \"196fe330aa8\" -> \"k0qvzPLq0jrqNGkT\",\r\n   \"4df955b80ab\" -> \"LcbSYVN5OSq3hOpA\",\r\n   \"efe0d41819e\" -> \"LcbSYVN5OSq3hOpA\",\r\n   \"d3144c2e927\" -> \"LcbSYVN5OSq3hOpA\",\r\n   \"bc58a501780\" -> \"lIO0JEHGKhZd8TCi\",\r\n   \"f22c790d851\" -> \"mGW9iu5L7DL8YVIc\",\r\n   \"76158654bc6\" -> \"mGW9iu5L7DL8YVIc\",\r\n   \"8135da68a66\" -> \"mGW9iu5L7DL8YVIc\",\r\n   \"64600f0dcb8\" -> \"mmPmBHiUdKZEJplH\",\r\n   \"642fc30011d\" -> \"OUOP0mwvUM8Wdvnv\",\r\n   \"0F78552441C\" -> \"OvDPSDuzaBChZqYp\",\r\n   \"58ba7f23fb5\" -> \"OvDPSDuzaBChZqYp\",\r\n   \"5bb971bb61e\" -> \"OvDPSDuzaBChZqYp\",\r\n   \"c8d681a7c5a\" -> \"pohs4JZPdKePKwRP\",\r\n   \"48d36d7eed5\" -> \"ptUIjCyXS5MAdyAy\",\r\n   \"0fca67d02eb\" -> \"ptUIjCyXS5MAdyAy\",\r\n   \"3776c4654ed\" -> \"ptUIjCyXS5MAdyAy\",\r\n   \"f459684f564\" -> \"QhZYlYWh6IVJmK8Q\",\r\n   \"4d11d2fd1ac\" -> \"QhZYlYWh6IVJmK8Q\",\r\n   \"132748a3eec\" -> \"RnNOWRW4DFNrGY45\",\r\n   \"66e756964ef\" -> \"s69HCIjwKDgcjx61\",\r\n   \"256ad4efb8e\" -> \"S9TSiK4k1LmTEvtT\",\r\n   \"e496e767004\" -> \"S9TSiK4k1LmTEvtT\",\r\n   \"973ffdbfbe8\" -> \"S9TSiK4k1LmTEvtT\",\r\n   \"55337fd6da1\" -> \"ScypfPvPIvnBK9nk\",\r\n   \"e4289364988\" -> \"ScypfPvPIvnBK9nk\",\r\n   \"04975f6646e\" -> \"ScypfPvPIvnBK9nk\",\r\n   \"1b898236aa1\" -> \"ScypfPvPIvnBK9nk\",\r\n   \"8bdc85e2078\" -> \"ScypfPvPIvnBK9nk\",\r\n   \"3153a5ebb11\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"947785e8a3a\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"f6b5aec5e41\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"e20c0b26618\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"5f66f10229a\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"28da32edbea\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"2482b593b29\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"373fc4d243a\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"6a77c9f9e82\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"80c521f51e0\" -> \"sjnw5ya8ranlRC3J\",\r\n   \"41d528d3f37\" -> \"TAPSLKDJLSSL2L3V\",\r\n   \"aa36d638bee\" -> \"TAPSLKDJLSSL2L3V\",\r\n   \"235dc09bc1c\" -> \"TAPSLKDJLSSL2L3V\",\r\n   \"51a0e31e0d7\" -> \"TAPSLKDJLSSL2L3V\",\r\n   \"8a52aef3622\" -> \"UTUAJO9naTZ5M3ZH\",\r\n   \"22da3a3bfc9\" -> \"VrGJvTdsVqZcXLAk\",\r\n   \"c196589faf0\" -> \"xnD2950fXuGIAB03\",\r\n   \"e1422783e2e\" -> \"y073Lw0iK2cyL2Pk\",\r\n   \"3b9bb08d94a\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"576c903cafa\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"0bf7ad49e77\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"e29b395f3c7\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"fa7a78c2f67\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"dfae8a55d03\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"95c757d7c82\" -> \"ZeDFD3S66M5pF6aW\",\r\n   \"e87ec3dac90\" -> \"ZXIE05YQVpy8IGCQ\"\r\n  )\r\n\r\n  // map函数[对value的每个元素应用，返回一个新的RichMap]\r\n  override def map(value: RichMap): RichMap = {\r\n    val bid = value.getOrElse(\"bid\", \"\").toString\r\n    val bigdataReceiveDelay = {\r\n      try {\r\n        value(\"bigdata_receive_time\").asInstanceOf[Date].getTime - value(\"log_time\").asInstanceOf[Date].getTime\r\n      } catch {\r\n        case _: Throwable =>\r\n          0L\r\n      }\r\n    }\r\n    val withOid = if (localCache.contains(bid)) {\r\n      value + (\"oid\" -> localCache(bid))\r\n    } else {\r\n      value\r\n    }\r\n    withOid + (\"bigdata_receive_delay_ms\" -> bigdataReceiveDelay) + (\"bigdata_time\" -> new Date())\r\n  }\r\n\r\n  // 打开操作\r\n  override def open(parameters: Configuration): Unit = {\r\n  }\r\n\r\n  // 关闭操作\r\n  override def close(): Unit = {\r\n  }\r\n}",
+            "functionType": "MAP"
+          }
+        },
+        "id": "85378e93-1173-4ac0-8dd2-87e5d710ed4d"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "114",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "117",
+      "name": "oid",
+      "type": "switch",
+      "subType": "analyzerRedirect",
+      "parallelism": 10,
+      "data": {
+        "name": "analyzerRedirect",
+        "parallelism": "10",
+        "field": "oid"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "101",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "118",
+      "name": "ZeDFD3S66M5pF6aW",
+      "type": "case",
+      "parallelism": 10,
+      "data": {
+        "parallelism": "10",
+        "name": "analyzerCase",
+        "value": "ZeDFD3S66M5pF6aW",
+        "rule": {
+          "ref": "",
+          "name": "analyzerParser"
+        }
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "117",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "119",
+      "name": "DEFAULT",
+      "type": "default",
+      "parallelism": 10,
+      "data": {
+        "id": "119"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "117",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "120",
+      "name": "aqy（添加字段）",
+      "type": "extend",
+      "subType": "addFields",
+      "parallelism": 10,
+      "data": {
+        "name": "aqy（添加字段）",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "parser": {
+          "name": "nothing",
+          "parallelism": 1,
+          "filter": [
+            {
+              "name": "addFields",
+              "fields": {
+                "vid": "HM",
+                "version": "2.0",
+                "stype": "bandwidth"
+              }
+            }
+          ]
+        },
+        "id": "",
+        "properties": [],
+        "sample": ""
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "118",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "121",
+      "name": "HDFS路径生成（加盐数据）_aqy",
+      "type": "analyzer",
+      "subType": "function",
+      "parallelism": 10,
+      "data": {
+        "collector": "mvp-hadoop09",
+        "name": "HDFS路径生成（加盐数据）_aqy",
+        "assets": "1007",
+        "industries": [
+          7
+        ],
+        "data": {
+          "name": "function",
+          "parallelism": 1,
+          "keyed": {
+            "keyed": false
+          },
+          "function": {
+            "functionType": "MAP",
+            "script": "package com.haima.sage.bigdata.script\nimport com.haima.sage.bigdata.etl.common.model.RichMap\nimport org.apache.flink.api.common.functions.RichMapFunction\nimport org.apache.flink.configuration.Configuration\nimport java.util.{Date, Locale}\n//TODO import  更多的引用\n//TODO 其他类定义\ncase class $name() extends RichMapFunction[RichMap,RichMap] {\n\n  // map函数[对value的每个元素应用，返回一个新的RichMap]\n  override def map(value: RichMap): RichMap = {\n      // 此处原样返回，不做任何处理\n      try {\n      import java.text.SimpleDateFormat\n      val df1 = new SimpleDateFormat(\"yyyyMMdd\")\n      val df2 = new SimpleDateFormat(\"yyyyMMddHH\")\n      val df3 = new SimpleDateFormat(\"dd/MMM/yyyy:HH:mm:ss Z\", Locale.ENGLISH)\n\n      val oid = value.getOrElse(\"oid\",\"null\").toString\n      var log_yyyyMMdd = \"\"\n      var log_yyyyMMddHH = \"\"\n      var sdfLogTime = \"\"\n      value.get(\"log_time\") match {\n        case None =>\n        case Some(time:java.util.Date) => {\n          log_yyyyMMdd = df1.format(time)\n          log_yyyyMMddHH = df2.format(time)\n          sdfLogTime = df3.format(time)\n        }\n      }\n\n      val hdfs_path = s\"/data/bandwidth_aqy/$log_yyyyMMdd/$oid/$log_yyyyMMdd/$log_yyyyMMddHH\"\n\n      value ++ Map(\"hdfs_path\"->hdfs_path,\"log_time\" -> sdfLogTime)\n    } catch {\n      case e: Exception => value\n    }\n  }\n\n  // 打开操作\n  override def open(parameters: Configuration): Unit = {\n  }\n\n  // 关闭操作\n  override def close(): Unit = {\n  }\n}"
+          }
+        }
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "120",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    },
+    {
+      "id": "122",
+      "name": "ROM详情输出HDFS_aqy",
+      "type": "sink",
+      "subType": "hdfs",
+      "parallelism": 5,
+      "data": {
+        "isSample": 0,
+        "name": "ROM详情输出HDFS_aqy",
+        "assets": "1",
+        "industries": [
+          1
+        ],
+        "createTime": "2021-04-07 12:20:23",
+        "data": {
+          "parallelism": 1,
+          "name": "hdfs",
+          "path": {
+            "parallelism": 0,
+            "name": "file",
+            "path": "$",
+            "dbname": "default",
+            "cache": 0,
+            "catalogName": "default",
+            "contentType": {
+              "name": "del",
+              "delimit": ",",
+              "fields": "log_time,oid,bid,cid,total_streamType,pkg_name,pre_timestamp,interval,idc,total_txBw,vid,version,stype",
+              "encoding": "UTF-8"
+            },
+            "persisRef": {
+              "name": "ref",
+              "field": "hdfs_path"
+            }
+          },
+          "setting": {
+            "interval": 3600000,
+            "maxSize": 128,
+            "maxActions": 1000000
+          },
+          "host": "MVP-HADOOP26:8020,MVP-HADOOP27:8020",
+          "dbname": "default",
+          "cache": 1000,
+          "nameService": "HaimaNX",
+          "catalogName": "default",
+          "replication": 1,
+          "authentication": "NONE",
+          "properties": {},
+          "nameNodes": "nn1,nn2",
+          "mode": false
+        },
+        "lastTime": "2021-04-07 12:20:23",
+        "id": "4f64e9fa-28ab-428f-b120-9b63e3ce9b96",
+        "writeType": "hdfs"
+      },
+      "inGroup": false,
+      "inFolding": false,
+      "previousNodes": [
+        {
+          "id": "121",
+          "parallelism": 0,
+          "inGroup": false,
+          "inFolding": false
+        }
+      ]
+    }
+  ],
+  "copyId": "ea681402-a407-476a-83c4-0f119da88c31",
+  "status": "RUNNING",
+  "assets": "1007",
+  "industries": [
+    7
+  ],
+  "collector": "mvp-hadoop09",
+  "properties": {
+    "parallelism": "10",
+    "timeout_ms": "100",
+    "receive_time": "false",
+    "collector_info": "false",
+    "cluster_info": "false",
+    "raw_data": "false",
+    "polling_ms": "1000",
+    "reuseObject": "true",
+    "source_info": "false",
+    "source_path": "false",
+    "cpu_lower": "false"
+  },
+  "channelType": {
+    "cluster": "http://MVP-HADOOP148:8081",
+    "jobId": "abb88b644ca04aab8fb3f8921c000001",
+    "model": "streaming",
+    "type": "analyzer",
+    "savepoint": {
+      "enable": true,
+      "triggerInterval": 0,
+      "keepSize": 0,
+      "restorePath": "hdfs://HaimaNX/user/flink/flink-savepoints/savepoint-abb88b-846274286d99"
+    },
+    "checkpoint": {
+      "enable": true,
+      "failConnection": false,
+      "unaligned": true,
+      "interval": 300,
+      "minPause": 10,
+      "timeout": 100,
+      "tolerableCheckpointFailureNumber": 10,
+      "mode": "EXACTLY_ONCE",
+      "externalized": "RETAIN_ON_CANCELLATION",
+      "maxConcurrent": 1
+    },
+    "clusterType": {
+      "enumClass": "com.haima.sage.bigdata.etl.common.model.ClusterType",
+      "value": "FLINK"
+    },
+    "name": "analyzer"
+  },
+  "cluster": "",
+  "lastTime": "2021-05-19 16:49:58",
+  "createTime": "2021-03-30 18:22:32",
+  "$default$3": {}
+}
