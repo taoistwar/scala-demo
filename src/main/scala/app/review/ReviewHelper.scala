@@ -25,6 +25,7 @@ trait ReviewHelper {
 
   val root = compareFields()
   val tree = genTreeRoot()
+  val treeSp = new JScrollPane(tree)
   val oldTa = new JTextArea(20, 30)
   val oldSp = new JScrollPane(oldTa)
   val newsTa = new JTextArea(20, 30)
@@ -35,12 +36,11 @@ trait ReviewHelper {
     val container = frame.getContentPane
     //    compareContainer.add()
     container.setLayout(new BorderLayout())
-    container.add(tree, BorderLayout.WEST)
-    tree.setSize(500, 1000)
+    container.add(treeSp, BorderLayout.WEST)
+    treeSp.setSize(500, 1000)
 
     container.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, oldSp, newsSp), BorderLayout.CENTER)
 
-    frame.setSize(800, 600)
     //    frame.setUndecorated(true); //去处边框
     frame.setExtendedState(Frame.MAXIMIZED_BOTH); //最大化
     frame.setAlwaysOnTop(false); //总在最前面

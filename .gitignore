@@ -5,3 +5,13 @@ target/
 
 src/main/resources/new.json
 src/main/resources/old.json
+src/main/resources/indices.json
+.bloop/
+.project
+.classpath
+.factorypath
+*.swp
+.metals/
+.project/
+.settings/
+.vscode/
