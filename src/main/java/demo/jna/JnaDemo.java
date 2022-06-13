@@ -10,7 +10,7 @@ public class JnaDemo {
 
     public interface CLibrary extends Library {
         CLibrary INSTANCE = (CLibrary)
-                Native.loadLibrary((Platform.isWindows() ? "msvcrt" : "c"),
+                Native.load((Platform.isWindows() ? "msvcrt" : "c"),
                         CLibrary.class);
 
         void printf(String format, Object... args);
@@ -21,6 +21,8 @@ public class JnaDemo {
         for (int i = 0; i < args.length; i++) {
             CLibrary.INSTANCE.printf("Argument %d: %s\n", i, args[i]);
         }
+
+
     }
 
 }
